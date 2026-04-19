@@ -79,6 +79,45 @@ Predeclare keys in `config/settings.php` to skip passing types and get defaults 
 
 Keys outside this list still work — definitions are opt-in sugar, not a schema.
 
+### Runtime-configurable defaults
+
+Config defaults ship with your code. When you also need defaults an admin can
+change at runtime, use the `setting_defaults` table. Defaults can be global or
+scoped to a specific owner morph class:
+
+```php
+use Bhhaskin\LaravelSettings\SettingsManager;
+use Bhhaskin\LaravelSettings\Facades\Settings;
+
+// Global default — applies to every model that owns settings
+Settings::setDefault('theme', 'sunrise');
+
+// Default scoped to one owner class
+Settings::setDefault('theme', 'midnight', null, User::class);
+
+Settings::getDefault('theme');               // 'sunrise'
+Settings::getDefault('theme', User::class);  // 'midnight'
+Settings::forgetDefault('theme', User::class);
+```
+
+`getSetting()` resolves in this order:
+
+1. The owner's own stored value
+2. DB default scoped to the owner's morph class
+3. Global DB default
+4. The `$default` argument
+5. Config `definitions[$key]['default']`
+6. `null`
+
+Use `allSettingsWithDefaults()` when you need the merged view:
+
+```php
+$user->allSettingsWithDefaults();
+// ['theme' => 'midnight', 'digest.hour' => 8, ...]
+```
+
+`allSettings()` is unchanged — it still returns only values stored for the owner.
+
 ### Attaching settings to other models
 
 Because the relation is polymorphic, you can add `HasSettings` to workspaces, teams, or any other model and call the same API. Each model's settings are scoped by `owner_type` / `owner_id`.

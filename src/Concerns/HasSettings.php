@@ -25,11 +25,17 @@ trait HasSettings
     {
         $record = $this->settings()->where('key', $key)->first();
 
-        if ($record === null) {
-            return $default ?? SettingsManager::defaultFor($key);
+        if ($record !== null) {
+            return $record->castedValue();
         }
 
-        return $record->castedValue();
+        $dbDefault = SettingsManager::lookupDefault($key, $this->getMorphClass());
+
+        if ($dbDefault !== null) {
+            return $dbDefault;
+        }
+
+        return $default ?? SettingsManager::defaultFor($key);
     }
 
     public function setSetting(string $key, mixed $value, SettingType|string|null $type = null): self
@@ -64,5 +70,17 @@ trait HasSettings
     public function allSettings(): array
     {
         return $this->settings->mapWithKeys(fn ($s) => [$s->key => $s->castedValue()])->all();
+    }
+
+    /**
+     * Return every setting resolved against defaults — owner-specific values
+     * win, then owner-type defaults, then global defaults.
+     */
+    public function allSettingsWithDefaults(): array
+    {
+        return array_merge(
+            SettingsManager::defaultsFor($this->getMorphClass()),
+            $this->allSettings(),
+        );
     }
 }

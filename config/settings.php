@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bhhaskin\LaravelSettings\Models\Setting;
+use Bhhaskin\LaravelSettings\Models\SettingDefault;
 
 return [
     /*
@@ -28,6 +29,29 @@ return [
     |
     */
     'table' => 'settings',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Setting Defaults Model
+    |--------------------------------------------------------------------------
+    |
+    | The Eloquent model used to persist runtime-configurable defaults. You
+    | may replace it with a custom implementation as long as it extends the
+    | packaged SettingDefault model.
+    |
+    */
+    'defaults_model' => SettingDefault::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Setting Defaults Table
+    |--------------------------------------------------------------------------
+    |
+    | The database table used to store runtime-configurable defaults. Each
+    | row may be scoped to a specific owner morph class or left global.
+    |
+    */
+    'defaults_table' => 'setting_defaults',
 
     /*
     |--------------------------------------------------------------------------
